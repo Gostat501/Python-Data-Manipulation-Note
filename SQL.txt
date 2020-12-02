@@ -1,0 +1,847 @@
+########## 1. Installment (9/6/19) ------------------------------
+pgadmin.org -> download -> pgAdmin 4 -> windows -> pgAdmin 4 v4.13
+-> pgAdmin 4 v4.13-x86.exe -> pgadmin4-4.2.dmg -> install.
+-> powtgresql.org -> windows -> EnterpriseDB(Download the installer) -> Latest version
+-> install (at one point, unclick pgAdmin4 since you have downloaded already)
+-> DONT FORGET THE PASSWARD!!!! the usual one for me.
+
+-> Search pgadmin in start menu, will start on browser.
+-> pick servers, postgreSQL11(if doesnt exist, create one.
+Name PostgreSQL11, localhost, and everything else the default.)
+->right click databade, create (name on your choise)
+-> go to the databade u made, right click, choose restore.
+-> at filename, put the path to the location of your data. If you wanna search, click three dots, find.
+-> go to restore options, turn on: predata, data, postdata, then restore.
+-> you may see an error on bot right, its fine. Just close and refresh by rick click the name of the server.
+-> Go to Query Tool via right click.
+-> e.g., SELECT * FROM film;, press the thunder at top or press F5.
+
+
+########## 2. SQL statement fundamentals --------------------------------
+
+- SQL is case insensitivem but put statements in upper case
+- Go to pgadmin, click database name (dvdrental), then click
+the thuner on top to start editing
+- To know a table names, go to schemas, tables.
+- Once statement inserted, press F5 to execute.
+
+
+######## SELECT ---
+
+SELECT * FROM table_name;
+-> select all rows/columns from the table;
+however, its often not neccesary to get all data.
+e.g)
+SELECT * FROM actor;
+
+SELECT column1, column2, FROM table_name;
+- > select col1, col2 and all rows
+e.g)
+SELECT first_name, last_name FROM actor;
+
+######## SELECT DISTINCT ---
+only get unique values.
+
+SELECT DISTINCT col1, col2
+FROM table_name;
+-> get unique ones only, used to check the number of unique values (e.g., # of years)
+e.g.)
+SELECT DISTINCT release_year
+FROM film;
+
+######## SELECT WHERE ---
+Gives specific raws. Comes after FROM.
+Equal: =
+not equalL <> or !=
+>, <, >=, <=, AND, OR, IS NULL
+
+SELECT DISTINCT col1, col2
+FROM table_name
+WHERE conditions;
+
+e.g.)
+SELECT DISTINCT col1, col2
+FROM table_name
+WHERE col1 < 0.01 AND col2 = 1;
+
+######## COUNT ---
+Count number of raws.
+
+SELECT COUNT(DISTINCT col1)
+FROM table;
+
+######## LIMIT ----
+limit the number of rows (BASICALLY, head()).
+If you want bottom rows, combine with ORDER BY.
+
+SELECT col1 FROM table
+LIMIT 5;
+
+######## ORDER BY ----
+change order.
+
+SELECT col1, col2 FROM table
+ORDER BY col1 ASC/DESC;
+e.g.)
+SELECT gpa, grade FROM student
+ORDER BY gpa DESC,		/// what comes first is the priority.
+grade ASC;
+e.g)
+SELECT grade FROM student	/// notice gpa is not selected. You dont need to include the column.
+ORDER BY gpa DESC;		/// this is possible ONLY in postgre. So, still include the colunn for the transaction ease.
+
+
+######## BETWEEN (conditional statement) ----
+Case 1: equivalent statement
+WHERE value >= low AND value <= high
+WHERE value BETWEEN low AND high;
+
+Case 2: equivalent statement
+WHERE value <= low OR value >= high
+WHERE value NOT BETWEEN low AND high;
+
+Case 3: 
+WHERE date NOT BETWEEN '2007-01-02' AND '2010-01-02';
+
+
+######## IN (condition statement) ---
+
+Case 1: equivalent statement
+WHERE col1 IN (1,2,3);
+WHERE col1 = 1 OR col1 = 2 OR col1 = 3;
+
+Case 2:
+WHERE col1 NOT IN (1,2,3);
+WHERE col1 != 1 OR col1 != 2 OR col1 != 3;
+
+### LIKE (conditional statement) -----
+Takes certain string values with conditions. Useful for finding names.
+%: for mataching any sequence of characters.
+_: for matching any single character.
+
+WHERE name LIKE 'Jenn%';
+-> 'Jenny', 'Jennifer'
+
+WHERE name LIKE '%y';
+-> 'Jenny', 'Nancy'
+
+WHERE name LIKE '%n_%y';
+-> 'Jenny', 'Nancy'
+
+WHERE name LIKE '%er%';
+-> 'Jennifer', 'Ernest', 'Tertzan'
+
+WHERE name LIKE 'Jenn_';
+-> 'Jenny' 
+
+########## 3. Aggregate functions -----------------------------------------------------
+
+##### AVG -----
+SELECT AVG(col1, col2) FROM table
+-> average of col1 and col2
+
+##### ROUND ------
+SELECT ROUND(AVG(col1, col2),2) FROM table
+-> average of col1 and col2, but round to 2 decimals
+
+##### MIN (and MAX) -----
+SELECT MIN(col1, col2) FROM table
+-> min of col1 and col2. If MAX, then max.
+
+##### COUNT ------
+SELECT COUNT(col1) FROM table
+WHERE col1=10
+-> Gives the number of rows where col1=10.
+
+##### SUM -----
+SELECT SUM(col1) FROM table
+-> sum up col1 values.
+
+##### GROUP BY ---- 
+Devides the rows returned from the SELECT statement into groups.
+
+SELECT col1
+FROM table
+GROUP BY col1;
+-> similar to DISTINCT and COUNT, get a single result for each element of col1.
+
+SELECT col1, SUM(col2)
+FROM table
+GROUP BY col1
+ORDER BY SUM(col2) DESC;
+-> it returns the sum of col2 w.r.t. each elem. of col1 in descending order.
+
+SELECT col1, COUNT(col2)
+FROM table
+GROUP BY col1;
+-> for each elem of col1, gives the count of col2. Same result if you use COUNT(*).
+
+
+##### HAVING  -----
+Used with GROUP BY to filter group rows that do not satisfy a condition.
+In words, HAVING is used for the data you wanted to investigate whereas WHERE is used for the 
+data that GROUP BY is applied.
+
+SELECT col1, fun(col2)
+FROM data
+GROUP BY col1
+HAVING condition;
+
+e.g)
+SELECT id, SUM(test_score)
+FROM student
+GROUP BY id
+HAVING SUM(test_score)>180;
+
+e.g)
+SELECT rating, AVG(rental_rate)
+FROM film
+WHERE rating IN ('R','G','PG')		\\specify element here
+GROUP BY rating
+HAVING AVG(rental_rate)<3;
+
+### Challenges ----
+
+# challenge 1 (got this, good job!)
+SELECT staff_id, COUNT(amount), SUM(amount)
+FROM payment
+GROUP BY staff_id
+LIMIT 5;
+
+# challenge 2 (EZPZ)
+SELECT rating, ROUND(AVG(replacement_cost),2)
+FROM film
+GROUP BY rating;
+
+# challenge 3 (genius, first attemp for all three and got them all)
+SELECT customer_id, SUM(amount)
+FROM payment
+GROUP BY customer_id
+ORDER BY SUM(amount) DESC
+LIMIT 5;
+
+# challenge 4 (eazy)
+SELECT customer_id, SUM(amount)
+FROM payment
+GROUP BY customer_id
+HAVING SUM(amount)>40;
+
+# challenge 5 (too ez, boring af)
+SELECT rating, AVG(rental_duration)
+FROM film
+GROUP BY rating
+HAVING AVG(rental_duration)>5;
+
+# Assesment test
+/* Problem 1*/		\\ got stuck
+SELECT customer_id, SUM(amount) \\ here, dont include staff_id, or it wont work...
+FROM payment
+WHERE staff_id = 2	\\ here
+GROUP BY customer_id
+HAVING SUM(amount)>110;
+
+/*Problem 2*/	\\ got this
+SELECT COUNT(title)
+FROM film
+WHERE title LIKE 'J%';
+
+/*Problem 3*/	\\got this
+SELECT first_name, last_name, customer_id
+FROM customer
+WHERE first_name LIKE 'E%' AND address_id<500
+ORDER BY customer_id DESC
+LIMIT 1;
+
+########## 4. JOINS statement -----------------------------------------------------
+
+Allow you to relate data in one table to the data in other tables.
+
+##### AS -----
+Allows rename columns or table selections with an alias.
+
+SELECT col1, AS col1_prime FROM data;
+e.g.)
+SELECT name, AVG(gpa) as average_gpa
+FROM student
+GROUP BY name;
+-> gives average gpa for each student, but the column name is average_gpa.
+
+##### INNER JOIN -----
+Say data A has "student", "id", "gpa" while data B has "student2", "year".
+First, specify the col in both tables from which you want to select data.
+Second, specify the main table i.e. A in this case, in the FROM.
+Third, specify the table to join to the main one with condition.
+Then, SQL find matches in the conditions (only the matched rows!!),
+	then return the result.
+Need table.colname unless the colanme is unique to the table.
+JOIN is same as INNER JOIN
+
+e.g)
+SELECT A.student, A.id, B.student2, B.year
+FROM A
+INNER JOIN B ON A.student = B.student2
+WHERE student LIKE 'A%';
+
+e.g)
+SELECT student, id
+FROM Atable
+JOIN Btable AS B on Atable.student = B.student2;
+
+##### OUTER JOIN -----
+
+A:		B:
+id name		id name
+1 Pirate	1 Lion
+2 Monkey	2 Pirate
+3 Ninja		3 Death
+4 Pasta		4 Ninja
+
+FULL OUTER JOIN: Unike INNER JOIN, join all rows even if there is no match.
+	Unmatched ones gives null.
+
+e.g.)
+
+SELECT * FROM TableA
+FULL OUTER JOIN TableB
+ON TableA.name = TableB.name;
+->
+A:		B:
+id name		id name
+1 Pirate	2 Pirate
+2 Monkey	null null
+3 Ninja		4 Ninja
+4 Pasta		null null
+null null	1 Lion
+null null	3 Death
+
+
+LEFT OUTER JOIN: Whatever avilable on left table. If not avilable on right table,
+	then whatever did not match will return null. 
+
+e.g.)
+SELECT * FROM TableA
+LEFT OUTER JOIN TableB
+ON TableA.name = TableB.name;
+->
+A:		B:
+id name		id name
+1 Pirate	2 Pirate
+2 Monkey	null null
+3 Ninja		4 Ninja
+4 Pasta		null null
+
+
+LEFT OUTER JOIN with WHERE: Produce the set of record only in A,
+	but not in table B, we perform the same left outer join, then
+	exclude the record we dont want from the right side via a where clause.
+	i.e. Exclusive to Left
+
+e.g.)
+SELECT * FROM TableA
+LEFT OUTER JOIN TableB
+ON TableA.name = TableB.name
+WHERE TableB.id IS NULL;
+->
+A:		B:
+id name		id name
+2 Monkey	null null
+4 Pasta		null null
+
+FULLOUTER JOIN with WHERE: produce set of record unique to table A and B,
+	perform the same outer join, then exclude the records we don't
+	want from both sides via a where clause.
+	i.e. Exclusive to Both
+
+e.g.)
+SELECT * FROM TableA
+FULL OUTER JOIN TableB
+ON TableA.name = TableB.name
+WHERE TableA.id IS NULL
+OR TableB.id IS NULL;
+->
+A:		B:
+id name		id name
+2 Monkey	null null
+4 Pasta		null null
+null null	1 Lion
+null null	3 Death
+
+
+##### UNION -----
+Combines result sets of two or more SELECT statements into a single result.
+Both queries must return the same number of columns and have compatiable data types.
+UNION removes all duplicate rows unless UNION ALL is used.
+UNION may place the rows in the first query before, after, or between the rows
+	in the result set of the second query.
+To sort the rows in the combined result set by a specified col, use the ORDER BY.
+Often use UNION to combine data from similar tables that are not perfectly normalized.
+
+e.g.)
+SELECT col1, col2
+FROM table1
+UNION
+SELECT col1, col2
+FROM table2;
+
+########## 5. Advanced SQL Command -----------------------------------------------------
+
+Syntax might differ depending on engined.
+
+##### Timestamps data type
+- day
+- dow(day of week)
+- doy(day of the year)
+- epoch (number of seconds since 1970-01-01 00:00:00)
+- hour
+- microseconds
+- millenium
+- milliseconds
+- mimutes
+- month
+- quarter
+- second
+- week
+- year
+
+Refer to the documentation/operation for all units on PostgreSQL webpage
+e.g. '2010-09-28' + integer '7' = '2010-10-05'
+
+Functions:
+
+AGE()
+CLOCK_TIMESTAMP()
+etc.
+
+
+##### extract() ----------------
+
+You want to use lower case here to make sure you are extracting from the data.
+
+e.g.
+SELECT customer_id, 
+extract(day from payment_date) AS day
+FROM payment;
+
+e.g.
+SELECT SUM(amount),
+extract(month from payment_date) AS month
+FROM payment
+GROUP BY month
+ORDER BY SUM(amount) DESC;
+
+
+
+##### Mathematical Operators and Functions  ------------------------
+
+Refer to Mathematical functions and operators page of postgre SQL
+
+e.g. of operators: +,-,/,*,^
+|/25  -> 5	square root
+||/27 -> 3	cube root
+5! -> 120	factorial
+!! 5 -> 120	factorial
+@-5	-> 5	absolute value
+91 & 15	-> 11	bitwise AND
+31 | 3 -> 35	butwise OR
+17#5 -> 20	bitwise XOR
+~1 -> -2	bitwise NOT
+1 << 4	-> 16	bitwise shift left
+8 >> 2 	-> 2	bitwise shift right
+
+\\\\\\
+e.g.
+SELECT customer_id+rental_id AS new_id
+FROM payment;
+\\\\\\
+
+
+Functions
+abs()
+cbrt()
+degrees
+exp()
+etc.
+
+random()
+setseed()
+
+\\\\\\
+e.g.
+SELECT round(AVG(amount),2)
+FROM payment;
+
+
+##### string operators and functions --------------
+
+Again refer to postgre SQL.
+Check the "regular expressions" for more advanced operations and functions.
+
+e.g.
+SELECT first_name || ' ' || last_name AS fullname
+FROM customer;
+->
+ fullname
+1 Jared Ely
+2 Mary Smith
+. .
+. .
+. .
+
+e.g.
+SELECT first_name, char_length(first_name)
+FROM customer;
+
+##### subquery ----------------------
+
+Allows us to use multiple SELECT statement.
+
+
+Suppose we want to find the films whose rental rate is higher than
+the average rental rate.
+
+//////////////// One way:
+
+- Find the average rental rate by SELECT and AVG
+
+SELECT AVG(rental_rate)
+FROM film;
+-> 2.98
+
+- Use the result of the first query then use another SELECT
+
+SELECT title, rental_rate
+FROM film
+WHERE rental_rate > 2.98;
+
+/////////////// this is pain in the butt. So..
+
+SELECT film_id, title, rental_rate
+FROM film
+WHERE rental_rate > (SELECT AVG(rental_rate) FROM film);
+
+
+e.g.		///// daunting example
+
+SELECT film_id, title
+FROM film
+WHERE film_id IN
+(SELECT inventory.film_id
+FROM rental
+INNER JOIN inventory ON inventory.inventory_id = rental.inventory_id
+WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30');
+
+
+##### self join -----------------
+
+special case of join that join a table to itself.
+
+
+e.g.
+name	location
+Joe	NY
+Sunsil	CA
+Alex	WA
+Albert	CA
+jack	NY
+
+
+\\\\\\\
+
+Say, you dont wanna use the folloing i.e. directly use NY.
+
+e.g.
+SELECT name
+FROM employee
+WHERE location = "NY"
+
+\\\\\\
+
+One could have used sub query such as the beloew, but it's daunting.
+
+e.g.
+SELECT name FROM employee
+WHERE location IN (
+SELECT location FROM employee
+WHERE name = 'Joe');
+
+\\\\\\\\
+
+Use self join.
+
+e.g.
+SELECT e1.name
+FROM employee AS e1, employee AS e2
+WHERE e1.location = e2.location AND e2.name = "Joe";
+
+########## 6. Assessment Test 2 -----------------------------------------------------
+
+Check for Assessment2.txt
+Got all correct, gj!
+
+########## 7. Data base and Tables -----------------------------------------------------
+
+### Data Types
+- Boolean
+- Character
+	- VARCHAR(#): vriable character up to # many.
+- Number
+	- INTEGER
+- Temporal i.e. date, time related data
+	- TIMESTAMP
+	- DATE
+- Special Types
+	- SERIAL: used for id
+- Array
+
+### Primary Keys
+- Column or a group of columns that i used to identify a row uniquely table.
+- Define primary keys through primary key constraints.
+- A table can have one and only one primary key, and creates a unique index on the
+	column used to define the primary key.
+
+e.g.
+CREATE TABLE table_name(
+col_name data_type PRIMARY KEY,
+col_name data_type,...);
+
+### Foreign Keys
+- Group of fields in a table that uniquely identifies a row in another table.
+- Defined in a table that refers to the primary key of the other table.
+
+- The table that cotain the foreign key is called referencing table or child table.
+	The table to which the foreign key references is called referenced table or 
+	parent table.
+- A table can have multiple foreign keys depending on its relationships with other tables.
+- Define foreign key through a foreign key constraint, which indicates that values in a col
+	or a group of col in the child table match with the values in a column or group
+	of columns of the parent table.
+- We say that a foreign hey contraint maintains referential integrity between child
+	and parent tables.
+
+##### CREATE TABLE ------------------
+
+- column constraint defined the rules for the columns e.g. NOT NULL
+- specify an existing table from which the new table inherits.
+- it means the new table contains all cols of the existing table and the cols
+	defined in the CREATE TABLE statement.
+- Once you are done creating, go to "Schemans" -> table, then you can find the table you made.
+
+CREATE TABLE table_name
+(col_name TYPE col_constraint,
+table_constraint)
+INHERITS existing_table_name;
+
+Example of constraints:
+- NOT NULL : the val of col cannot be NULL
+- UNIQUE: every val msut be unique. However can have many NULLs since it is treated uniquely.
+- PRIMARY KEY: NOT NULL and UNIQUE, only one can be defined.
+- CHECK: enables to check a condition when you insert or update data e.g. the price
+	column of the product table must be positive values.
+- REFERENCES: constrain the val of the column that exists in a column in another table.
+- UNIQUE(col_list): force the value stored in the column listed to be unique.
+- PRIMARY KEY(col_list)
+- CHECK(col_list)
+- REFERENCES(col_list)
+
+
+e.g.
+CREATE TABLE account(
+user_id serial PRIMARY KEY,
+username VARCHAR (50) UNIQUE NOT NULL,
+password VARCHAR (50) NOT NULL,
+email VARCHAR (355) UNIQUE NOT NULL,
+created_on TIMESTAMP NOT NULL,
+last_login TIMESTAMP
+);
+
+CREATE TABLE role(
+role_id serial PRIMARY KEY,
+role_name VARCHAR (255) UNIQUE NOT NULL
+);
+
+CREATE TABLE account_role
+(
+  user_id integer NOT NULL,
+  role_id integer NOT NULL,
+  grant_date timestamp without time zone,
+  PRIMARY KEY (user_id, role_id),
+  CONSTRAINT account_role_role_id_fkey FOREIGN KEY (role_id)
+      REFERENCES role (role_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT account_role_user_id_fkey FOREIGN KEY (user_id)
+      REFERENCES account (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+##### INSERT ------------------
+
+- Specify the name of the table that you want to insert a new row after the INSERT INTO.
+- List values after the VALUES. 
+e.g.
+
+INSERT INTO table(col1, col2,...)
+VALUES(val1_of_col1, val1_of_col2,...),
+	(val2_of_col, val2_of_col2, ...),...;
+
+- Use INSERT INTO SELECT to insert data from another table.
+e.g.
+INSERT INTO table
+SELECT col1, col2...
+FROM abother_table
+WHERE condition;
+
+##### UPDATE ------------------
+
+- Update values. Here, col1, col2 is column name and val1, val2 are the values that
+	want to replace with. If no conditions i.e. WHERE is used, then all values
+	in col1 and col2 will be replaced with val1 and val2. So, make sure to use
+	WHERE if you only want to update certain rows!
+- val1 and val2 can also be other arrays or columns. 
+
+e.g.
+UPDATE table
+SET col1 = val1,
+    col2 = val2,...
+WHERE condition;
+
+- RETURNING let the results back immidiately for the verification.
+e.g.
+UPDATE table
+SET col1 = val1,
+    col2 = val2,...
+WHERE condition
+RETURNING col1, col2, *;
+
+##### DELETE ---------------------
+- DELETE rows. RETURNING can be used.
+
+e.g.
+DELETE FROM table
+WHERE condition;
+
+##### ALTER TABLE -------------------------
+
+- Change features of table.
+
+ALTER TABLE table_name action;
+
+action example:
+- ADD COLUMN
+- DROP COLUMN
+- RENAME COLUMN
+- ADD CONSTRAINT
+- RENAME TO
+
+e.g.
+ALTER TABLE table_name ADD COLUMN col1 data_type;
+ALTER TABLE table_name DROP COLUMN col1;
+ALTER TABLE table_name RENAME COLUMN col1 TO col2;
+ALTER TABLE table_name RENAME TO new_table_name;
+
+
+##### DROP TABLE -------------------------
+
+- Delete table
+- RESTRICT: restrict drop if there is any object that has dependency. Default is this.
+- CASCADE: drop all.
+
+e.g.
+DROP TABLE IF EXIST table_name RESTRICT;
+
+##### CHECK constraint ---------------------
+
+- Check if conditions is met is met.
+
+e.g.
+CREATE TABLE table(
+birth_date DATE CHECK(birth_date > '1900-01-01'),
+join_date DATE CHECK(join_date > birth_date)
+);
+
+->
+
+INSERT new_users(birth_date, join_date)
+VALUES('2100-01-01', '1900-02-02');
+
+-> error.
+
+- You can add the name of the constraints. 
+e.g.
+CREATE TABLE checktest(
+sales INTEGER CONSTRAINT positive_sale CHECK (sale>0));
+->
+INSERT INTO checktest(sales)
+VALUES(-12);
+->
+error on 'positive_sale'.
+
+########## 8. Assessment 3 -----------------------------------------------------
+
+All correct! GJ! Check "Assessment 3.txt"
+
+########## 9. Views -----------------------------------------------------
+
+##### VIEW -------------------
+- data base object that is ofa stored query, accessible as a viertual table in PostgreSQL
+
+e.g.
+CREATE VIEW view_name AS query;
+
+e.g.
+CREATE VIEW customer_info AS
+SELECT first_name, last_name, email, address, phone
+FROM customer
+JOIN address
+ON customer.address_id = address.address_id;
+
+SELECT * FROM cunstomer_info;
+-> result of the first joint new table
+
+##### ALTER VIEW ---------------------
+- change name of view
+e.g.)
+ALTER VIEW IF EXISTS customer_info RENAME TO customer_list;
+
+########## 10. Python --------------------------------------------------------
+
+- Use 'psycopg2' library
+
+e.g.
+
+secret = '*******'
+import psycopg2 as pg2
+conn = pg2.connect(database='dvdrental', user='postgres', password=secret)
+cur = conn.cursor()
+cur.execute('SELECT * FROM payment')
+cur.fetchone() # return the first row
+cur.fetchmany(10) # return 10
+cur.fetchall() # return all
+
+e.g.
+data = cur.fetchmany(10)
+data[0][4]
+
+e.g.
+conn.close()  ////// need this to close the server connection!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
